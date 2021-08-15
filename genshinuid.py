@@ -23,7 +23,8 @@ import base64
 from PIL import Image
 
 
-#源码来源于https://github.com/Womsxd/YuanShen_User_Info
+#信息抓取源码来源于https://github.com/Womsxd/YuanShen_User_Info
+#输入米游社ID能返回等级
 sv = Service('ysInfo', visible=True, manage_priv=priv.ADMIN, enable_on_default=True)
 bot = get_bot()
 
@@ -35,45 +36,6 @@ cache_Cookie = "" #自行获取
 FILE_PATH = os.path.dirname(__file__)
 FONTS_PATH = os.path.join(FILE_PATH,'fonts')
 FONTS_PATH = os.path.join(FONTS_PATH,'sakura.ttf')
-
-def get_duanluo(text):
-    txt = Image.new('RGBA', (600, 800), (255, 255, 255, 0))
-    draw = ImageDraw.Draw(txt)
-    # 所有文字的段落
-    duanluo = ""
-    max_width = 600
-    # 宽度总和
-    sum_width = 0
-    # 几行
-    line_count = 1
-    # 行高
-    line_height = 0
-    for char in text:
-        width, height = draw.textsize(char, font)
-        sum_width += width
-        if sum_width > max_width: # 超过预设宽度就修改段落 以及当前行数
-            line_count += 1
-            sum_width = 0
-            duanluo += '\n'
-        duanluo += char
-        line_height = max(height, line_height)
-    if not duanluo.endswith('\n'):
-        duanluo += '\n'
-    return duanluo, line_height, line_count
-
-def split_text(content):
-    # 按规定宽度分组
-    max_line_height, total_lines = 0, 0
-    allText = []
-    for text in content.split('\n'):
-        duanluo, line_height, line_count = get_duanluo(text)
-        max_line_height = max(line_height, max_line_height)
-        total_lines += line_count
-        allText.append((duanluo, line_count))
-    line_height = max_line_height
-    total_height = total_lines * line_height
-    drow_height = total_lines * line_height
-    return allText, total_height, line_height, drow_height
 
 def md5(text):
     md5 = hashlib.md5()
@@ -416,66 +378,22 @@ def JsonAnalysis(JsonText,Uid, ServerID, level, nickname):
                 draw.text((915, 595), line, font=font, fill = (255, 255, 255))
     
     #尘歌壶
-    if len(data["data"]["homes"]) != 0:
-        Home_List = data["data"]["homes"]
+    Home_List = data["data"]["homes"]
+    try:
         line = "尘歌壶 Lv."+ str(Home_List[0]["level"])
-        font = ImageFont.truetype(FONTS_PATH, 30)
-        w, h = draw.textsize(line, font=font)
-        draw.text(((2474 - w) / 2, 75), line, font=font, fill = (255, 255, 255))
-        
-        #尘歌壶3个洞天
-        homeworld_list = []
-        #有解锁的洞天
-        for i in Home_List:
-            homeworld_list.append(i["name"])
-            if i['name']=='翠黛峰':
-                line = i['name']
-                font = ImageFont.truetype(FONTS_PATH, 30)
-                w, h = draw.textsize(line, font=font)
-                draw.text(((2474 - w) / 2, 165), line, font=font, fill = (242, 196, 127))
-                
-                line = "洞天等级"
-                font = ImageFont.truetype(FONTS_PATH, 30)
-                w, h = draw.textsize(line, font=font)
-                draw.text(((2474 - w) / 2, 203), line, font=font, fill = (250, 245, 207))
-                
-                line = i['comfort_level_name']
-                font = ImageFont.truetype(FONTS_PATH, 24)
-                w, h = draw.textsize(line, font=font)
-                draw.text(((2474 - w) / 2, 232), line, font=font, fill = (255, 255, 255))
-            elif i['name']=='罗浮洞':
-                line = i['name']
-                font = ImageFont.truetype(FONTS_PATH, 30)
-                w, h = draw.textsize(line, font=font)
-                draw.text(((2474 - w) / 2, 368), line, font=font, fill = (242, 196, 127))
-                
-                line = "洞天等级"
-                font = ImageFont.truetype(FONTS_PATH, 30)
-                w, h = draw.textsize(line, font=font)
-                draw.text(((2474 - w) / 2, 406), line, font=font, fill = (250, 245, 207))
-                
-                line = i['comfort_level_name']
-                font = ImageFont.truetype(FONTS_PATH, 24)
-                w, h = draw.textsize(line, font=font)
-                draw.text(((2474 - w) / 2, 435), line, font=font, fill = (255, 255, 255))
-            elif i['name']=='清琼岛':
-                line = i['name']
-                font = ImageFont.truetype(FONTS_PATH, 30)
-                w, h = draw.textsize(line, font=font)
-                draw.text(((2474 - w) / 2, 571), line, font=font, fill = (242, 196, 127))
-                
-                line = "洞天等级"
-                font = ImageFont.truetype(FONTS_PATH, 30)
-                w, h = draw.textsize(line, font=font)
-                draw.text(((2474 - w) / 2, 609), line, font=font, fill = (250, 245, 207))
-                
-                line = i['comfort_level_name']
-                font = ImageFont.truetype(FONTS_PATH, 24)
-                w, h = draw.textsize(line, font=font)
-                draw.text(((2474 - w) / 2, 638), line, font=font, fill = (255, 255, 255))
-        #未解锁的洞天
-        if '翠黛峰' not in homeworld_list:
-            line = '翠黛峰'
+    except IndexError:
+        line = "尘歌壶 未解锁"
+    font = ImageFont.truetype(FONTS_PATH, 30)
+    w, h = draw.textsize(line, font=font)
+    draw.text(((2474 - w) / 2, 75), line, font=font, fill = (255, 255, 255))
+    
+    #尘歌壶3个洞天
+    homeworld_list = []
+    #有解锁的洞天
+    for i in Home_List:
+        homeworld_list.append(i["name"])
+        if i['name']=='翠黛峰':
+            line = i['name']
             font = ImageFont.truetype(FONTS_PATH, 30)
             w, h = draw.textsize(line, font=font)
             draw.text(((2474 - w) / 2, 165), line, font=font, fill = (242, 196, 127))
@@ -485,12 +403,12 @@ def JsonAnalysis(JsonText,Uid, ServerID, level, nickname):
             w, h = draw.textsize(line, font=font)
             draw.text(((2474 - w) / 2, 203), line, font=font, fill = (250, 245, 207))
             
-            line = '未解锁'
+            line = i['comfort_level_name']
             font = ImageFont.truetype(FONTS_PATH, 24)
             w, h = draw.textsize(line, font=font)
             draw.text(((2474 - w) / 2, 232), line, font=font, fill = (255, 255, 255))
-        if '罗浮洞' not in homeworld_list:
-            line = '罗浮洞'
+        elif i['name']=='罗浮洞':
+            line = i['name']
             font = ImageFont.truetype(FONTS_PATH, 30)
             w, h = draw.textsize(line, font=font)
             draw.text(((2474 - w) / 2, 368), line, font=font, fill = (242, 196, 127))
@@ -500,12 +418,12 @@ def JsonAnalysis(JsonText,Uid, ServerID, level, nickname):
             w, h = draw.textsize(line, font=font)
             draw.text(((2474 - w) / 2, 406), line, font=font, fill = (250, 245, 207))
             
-            line = '未解锁'
+            line = i['comfort_level_name']
             font = ImageFont.truetype(FONTS_PATH, 24)
             w, h = draw.textsize(line, font=font)
             draw.text(((2474 - w) / 2, 435), line, font=font, fill = (255, 255, 255))
-        if '清琼岛' not in homeworld_list:
-            line = '清琼岛'
+        elif i['name']=='清琼岛':
+            line = i['name']
             font = ImageFont.truetype(FONTS_PATH, 30)
             w, h = draw.textsize(line, font=font)
             draw.text(((2474 - w) / 2, 571), line, font=font, fill = (242, 196, 127))
@@ -515,22 +433,12 @@ def JsonAnalysis(JsonText,Uid, ServerID, level, nickname):
             w, h = draw.textsize(line, font=font)
             draw.text(((2474 - w) / 2, 609), line, font=font, fill = (250, 245, 207))
             
-            line = '未解锁'
+            line = i['comfort_level_name']
             font = ImageFont.truetype(FONTS_PATH, 24)
             w, h = draw.textsize(line, font=font)
             draw.text(((2474 - w) / 2, 638), line, font=font, fill = (255, 255, 255))
-            
-        #摆设
-        line = "摆件:" + str(Home_List[0]["item_num"])
-        font = ImageFont.truetype(FONTS_PATH, 26)
-        w, h = draw.textsize(line, font=font)
-        draw.text(((2474 - w) / 2, 730), line, font=font, fill = (255, 255, 255))
-        #最大仙力
-        line = '仙力:' + str(Home_List[0]["comfort_num"])
-        font = ImageFont.truetype(FONTS_PATH, 26)
-        w, h = draw.textsize(line, font=font)
-        draw.text(((2474 - w) / 2, 770), line, font=font, fill = (255, 255, 255))
-    else:
+    #未解锁的洞天
+    if '翠黛峰' not in homeworld_list:
         line = '翠黛峰'
         font = ImageFont.truetype(FONTS_PATH, 30)
         w, h = draw.textsize(line, font=font)
@@ -545,7 +453,7 @@ def JsonAnalysis(JsonText,Uid, ServerID, level, nickname):
         font = ImageFont.truetype(FONTS_PATH, 24)
         w, h = draw.textsize(line, font=font)
         draw.text(((2474 - w) / 2, 232), line, font=font, fill = (255, 255, 255))
-
+    if '罗浮洞' not in homeworld_list:
         line = '罗浮洞'
         font = ImageFont.truetype(FONTS_PATH, 30)
         w, h = draw.textsize(line, font=font)
@@ -560,7 +468,7 @@ def JsonAnalysis(JsonText,Uid, ServerID, level, nickname):
         font = ImageFont.truetype(FONTS_PATH, 24)
         w, h = draw.textsize(line, font=font)
         draw.text(((2474 - w) / 2, 435), line, font=font, fill = (255, 255, 255))
-
+    if '清琼岛' not in homeworld_list:
         line = '清琼岛'
         font = ImageFont.truetype(FONTS_PATH, 30)
         w, h = draw.textsize(line, font=font)
@@ -576,16 +484,22 @@ def JsonAnalysis(JsonText,Uid, ServerID, level, nickname):
         w, h = draw.textsize(line, font=font)
         draw.text(((2474 - w) / 2, 638), line, font=font, fill = (255, 255, 255))
         
-        #摆设
-        line = "摆件:0"
-        font = ImageFont.truetype(FONTS_PATH, 26)
-        w, h = draw.textsize(line, font=font)
-        draw.text(((2474 - w) / 2, 730), line, font=font, fill = (255, 255, 255))
-        #最大仙力
-        line = '仙力:0'
-        font = ImageFont.truetype(FONTS_PATH, 26)
-        w, h = draw.textsize(line, font=font)
-        draw.text(((2474 - w) / 2, 770), line, font=font, fill = (255, 255, 255))
+    #摆设
+    try:
+        line = "摆件:" + str(Home_List[0]["item_num"])
+    except IndexError:
+        line = "摆件:未解锁"
+    font = ImageFont.truetype(FONTS_PATH, 26)
+    w, h = draw.textsize(line, font=font)
+    draw.text(((2474 - w) / 2, 730), line, font=font, fill = (255, 255, 255))
+    #最大仙力
+    try:
+        line = '仙力:' + str(Home_List[0]["comfort_num"])
+    except IndexError:
+        line = '仙力:未解锁'
+    font = ImageFont.truetype(FONTS_PATH, 26)
+    w, h = draw.textsize(line, font=font)
+    draw.text(((2474 - w) / 2, 770), line, font=font, fill = (255, 255, 255))
     
     zb_list = []
     for l in range(need_middle):
@@ -705,65 +619,69 @@ def JsonAnalysis(JsonText,Uid, ServerID, level, nickname):
 
 
     
-@sv.on_prefix(['原神信息','米游社查询','原神查询'])
+@sv.on_prefix('原神信息')
 async def genshin(bot, ev: CQEvent):
     uid = ev.message.extract_plain_text()
     sender = ev.sender
-    msg = str(ev)
     if not re.fullmatch('[0-9]*', uid):
         await bot.send(ev, uid, at_sender=True)
         return
     uid = uid.lstrip('0')
     if not uid:
-        await bot.send(ev, '请输入原神信息uid或米游社ID 如：原神信息100692770', at_sender=True)
+        await bot.send(ev, '请输入原神信息+uid 如：原神信息100692770', at_sender=True)
         sv.logger.info('原神uid不对')
         return
     level = 0
     nickname = sender["card"] or sender["nickname"]
-    if '米游社' in msg:
-        userinfo = json.loads(GetBaseInfo(uid))
-        gamelist = userinfo['data']['list']
-        for item in gamelist:
-            if item['game_id']==2:
-                uid = item['game_role_id']
-                level = item['level']
-                nickname = item['nickname']
-                break
-        if int(level)<1:
-            await bot.send(ev, '米游社ID有误！\n请检查输入的米游社ID是否绑定了原神账号！', at_sender=True)
-            return
-    else:
-        if (len(uid) != 9):
-            userinfo = json.loads(GetBaseInfo(uid))
-            gamelist = userinfo['data']['list']
-            for item in gamelist:
-                if item['game_id']==2:
-                    uid = item['game_role_id']
-                    level = item['level']
-                    nickname = item['nickname']
-                    break
-            if int(level)<1:
-                await bot.send(ev, 'UID有误！\n请检查输入的UID是否正确！', at_sender=True)
-                return
-    if (len(uid) == 9):
-        if (uid[0] == "1"):
-            sv.logger.info('原神查询uid中')
-            await bot.send(ev,'原神查询uid中')
-            mes = JsonAnalysis(GetInfo(uid, "cn_gf01"), uid, "cn_gf01", level, nickname)
-            await bot.send(ev, mes, at_sender=True)
-            #await bot.send_group_forward_msg(group_id=ev['group_id'], messages=tas_list)
-        elif (uid[0] == "5"):
-            sv.logger.info('原神查询uid中')
-            mes = JsonAnalysis(GetInfo(uid, "cn_qd01"), uid, "cn_qd01", level, nickname)
-            await bot.send(ev, mes, at_sender=True)
-            #await bot.send_group_forward_msg(group_id=ev['group_id'], messages=tes_list)
-        else:
-            sv.logger.info('原神uid不对')
-            await bot.send(ev, 'UID输入有误！\n请检查UID是否为国服UID！', at_sender=True)
+    if (uid[0] == "1"):
+        sv.logger.info('原神查询uid中')
+        await bot.send(ev,'原神查询uid中')
+        mes = JsonAnalysis(GetInfo(uid, "cn_gf01"), uid, "cn_gf01", level, nickname)
+        await bot.send(ev, mes, at_sender=True)
+        #await bot.send_group_forward_msg(group_id=ev['group_id'], messages=tas_list)
+    elif (uid[0] == "5"):
+        sv.logger.info('原神查询uid中')
+        mes = JsonAnalysis(GetInfo(uid, "cn_qd01"), uid, "cn_qd01", level, nickname)
+        await bot.send(ev, mes, at_sender=True)
+        #await bot.send_group_forward_msg(group_id=ev['group_id'], messages=tes_list)
     else:
         sv.logger.info('原神uid不对')
-        await bot.send(ev, 'UID长度有误！\n请检查输入的UID是否为9位数！', at_sender=True)
-
+        await bot.send(ev, 'UID输入有误！\n请检查UID是否为国服UID！', at_sender=True)
+@sv.on_prefix('米游社原神信息')
+async def genshin(bot, ev: CQEvent):
+    uid = ev.message.extract_plain_text()
+    sender = ev.sender
+    if not re.fullmatch('[0-9]*', uid):
+        await bot.send(ev, uid, at_sender=True)
+        return
+    uid = uid.lstrip('0')
+    if not uid:
+        await bot.send(ev, '请输入米游社原神信息+米游社ID 如：米游社原神信息100692770', at_sender=True)
+        sv.logger.info('米游社id不对')
+        return
+    level = 0
+    nickname = sender["card"] or sender["nickname"]
+    userinfo = json.loads(GetBaseInfo(uid))
+    gamelist = userinfo['data']['list']
+    for item in gamelist:
+        if item['game_id']==2:
+            uid = item['game_role_id']
+            level = item['level']
+            nickname = item['nickname']
+    if (uid[0] == "1"):
+        sv.logger.info('原神查询uid中')
+        await bot.send(ev,'原神查询uid中')
+        mes = JsonAnalysis(GetInfo(uid, "cn_gf01"), uid, "cn_gf01", level, nickname)
+        await bot.send(ev, mes, at_sender=True)
+        #await bot.send_group_forward_msg(group_id=ev['group_id'], messages=tas_list)
+    elif (uid[0] == "5"):
+        sv.logger.info('原神查询uid中')
+        mes = JsonAnalysis(GetInfo(uid, "cn_qd01"), uid, "cn_qd01", level, nickname)
+        await bot.send(ev, mes, at_sender=True)
+        #await bot.send_group_forward_msg(group_id=ev['group_id'], messages=tes_list)
+    else:
+        sv.logger.info('原神uid不对')
+        await bot.send(ev, 'UID输入有误！\n请检查UID是否为国服UID！', at_sender=True)
 @sv.on_prefix('原神深渊')
 async def genshin(bot: HoshinoBot, ev: CQEvent):
     args = ev.message.extract_plain_text().split()
